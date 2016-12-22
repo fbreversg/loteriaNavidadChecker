@@ -2,7 +2,7 @@ import urllib.request
 import json
 import time
 
-numeros = (33131,66859,67713,80472,46982,53243,11618)
+numeros = (1,2,3,4,5)
 resultados = []
 
 while True:
