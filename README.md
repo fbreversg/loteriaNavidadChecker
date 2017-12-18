@@ -6,10 +6,10 @@ Python 3.X
 
 * pip install requirements.txt
 * Editar config.py con los numeros que se juegan y opcionalmente un token de prueba de slack y tu usuario.
+* python navidad.py
 
 Para la integracion con slack:
 * Obtener un token de prueba: https://api.slack.com/custom-integrations/legacy-tokens
-* Lanzar el script con el parametro: SLACK_BOT_TOKEN="TOKEN_DE_TEST" python myapp.py
 
 # Gracias a:
 
