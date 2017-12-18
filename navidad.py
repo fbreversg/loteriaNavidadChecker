@@ -1,13 +1,13 @@
 import urllib.request
 import json
 import time
+import config
+from slackclient import SlackClient
 
 """ Automatismo tontorron para ver si te ha tocado algun numero de la loteria de navidad."""
-""" Paco Brevers """
+""" Paco Brevers 2017 - 2018"""
 
-# Numeros a comprobar
-numeros = (1, 2, 3, 4, 5)
-
+# Otros temas del script.
 magic_number = 42   # numero solo para comprobar el estado del sorteo.
 resultados = []     # array de resultados
 premiado = {}       # TODO: diccionario de premiados para "cachear" llamadas
@@ -46,22 +46,32 @@ def verifica_numero(numero, retry=True):
 
 
 def main():
+
+    # El bucle
     while True:
 
+        # Comprobacion de estado del sorteo. No tiene sentido empezar a lanzar peticiones antes de tiempo.
         response = urllib.request.urlopen(ENDPOINT+str(magic_number))
         estado = json.loads(response.read().decode('utf8').replace('busqueda=', ''))
 
+        # Imprime el estado del sorteo.
         status = estado['status']
         print(estadoConcurso[status])
 
+        # Si ha empezado ya.
         if status in (1, 2, 3, 4):
 
+            # Comprobacion de numeros con reintento.
             for numero in numeros:
                 resultados.append(verifica_numero(numero))
 
+            # Comunicacion de resultados.
             for resultado in resultados:
                 if resultado['premio'] > 0:
                     print(LITERAL_TOCA.format(resultado['numero'], resultado['premio']))
+                    # Si hay integracion con slack se comunica.
+                    if sc:
+                        print(sc.api_call('chat.postMessage', channel=slack_user, text=LITERAL_TOCA.format(resultado['numero'], resultado['premio']) + ':tada:'))
                 elif resultado['premio'] < 0:
                     print(LITERAL_ERROR_API_MENSAJE.format(numero))
                 else:
@@ -74,5 +84,15 @@ def main():
 
 
 if __name__ == "__main__":
+
+    # Numeros a comprobar
+    numeros = config.numeros
+
+    # Configuracion de slack
+    if config.slack_token:
+        sc = SlackClient(config.slack_token)
+        slack_user = config.slack_user
+
+    # A jugarrrrrr!!!!
     main()
 
