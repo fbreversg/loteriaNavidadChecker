@@ -14,5 +14,5 @@ Para la integracion con slack:
 # Gracias a:
 
 * ElPais.com por publicar su API de consulta.
-* Jesus Esteban por su sugerencia de dar avisos.
-* Alejandro Franco por pensar en los premios incrementales.
+* Jesus Esteban (https://github.com/txesus) por su sugerencia de dar avisos y mostrar el premio real en funcion de lo jugado.
+* Alejandro Franco (https://github.com/afrasilv) por pensar en los premios incrementales.
