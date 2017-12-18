@@ -11,6 +11,8 @@ Para la integracion con slack:
 * Obtener un token de prueba: https://api.slack.com/custom-integrations/legacy-tokens
 * Lanzar el script con el parametro: SLACK_BOT_TOKEN="TOKEN_DE_TEST" python myapp.py
 
-## Gracias a ElPais.com por publicar su API de consulta.
-## Gracias a Jesus Esteban por su sugerencia de dar avisos.
-## Gracias Alejandro Franco por pensar en los premios incrementales.
+# Gracias a:
+
+* ElPais.com por publicar su API de consulta.
+* Jesus Esteban por su sugerencia de dar avisos.
+* Alejandro Franco por pensar en los premios incrementales.
