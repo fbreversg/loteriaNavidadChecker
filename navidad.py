@@ -28,6 +28,7 @@ ESTADO_CONCURSO = {0: 'Sorteo no ha empezado. Lo compruebo cada minuto.', 1: 'Re
 LITERAL_ERROR_API = 'ERROR: El api me odia y no ha querido contestarme para el numero: {0}'
 LITERAL_ERROR_API_RETRY = 'ERROR: Se ha reintentado pero el API me sigue odiando asi que GL y a esperar para el: {0}'
 LITERAL_ERROR_API_MENSAJE = 'No se ha podido verificar el numero {}'
+LITERAL_ERROR_API_NO_DISPONIBLE = 'API no disponible en este momento.'
 LITERAL_NO_TOCA = 'MOJON en {0} con {1}'
 LITERAL_TOCA = 'PREMIO en {0} con {1} :tada:'
 LITERAL_TOCA_MAS = 'INCREMENTO DE PREMIO en {0} de {1} a {2} CONGRATS!!! :tada: :tada: :tada: :tada:'
@@ -97,36 +98,39 @@ def main():
         response = urllib.request.urlopen(ENDPOINT+str(MAGIC_NUMBER))
         estado = json.loads(response.read().decode('utf8').replace('busqueda=', ''))
 
-        # Imprime el estado del sorteo.
-        status = estado['status']
-        print(ESTADO_CONCURSO[status])
+        if estado['error'] == 1:
+            print(LITERAL_ERROR_API_NO_DISPONIBLE)
+        else:
+            # Imprime el estado del sorteo.
+            status = estado['status']
+            print(ESTADO_CONCURSO[status])
 
-        # Si ha empezado ya.
-        if status in (1, 2, 3, 4):
+            # Si ha empezado ya.
+            if status in (1, 2, 3, 4):
 
-            # Comprobacion de numeros con reintento.
-            for numero, jugado in numeros.items():
-                resultados.append(verifica_numero(numero, jugado))
+                # Comprobacion de numeros con reintento.
+                for numero, jugado in numeros.items():
+                    resultados.append(verifica_numero(numero, jugado))
 
-            # Comunicacion de resultados.
-            for resultado in resultados:
-                if resultado['premio'] > 0:
-                    if not verifica_incremento(resultado['numero'], resultado['premio']):
-                        print(LITERAL_TOCA.format(resultado['numero'], resultado['premio']))
-                        # Si hay integracion con slack se comunica.
-                        if sc:
-                            sc.api_call('chat.postMessage', channel=slack_user, text=LITERAL_TOCA.format(resultado['numero'], resultado['premio']))
-                elif resultado['premio'] < 0:
-                    print(LITERAL_ERROR_API_MENSAJE.format(numero))
-                else:
-                    print(LITERAL_NO_TOCA.format(resultado['numero'], resultado['premio']))
+                # Comunicacion de resultados.
+                for resultado in resultados:
+                    if resultado['premio'] > 0:
+                        if not verifica_incremento(resultado['numero'], resultado['premio']):
+                            print(LITERAL_TOCA.format(resultado['numero'], resultado['premio']))
+                            # Si hay integracion con slack se comunica.
+                            if sc:
+                                sc.api_call('chat.postMessage', channel=slack_user, text=LITERAL_TOCA.format(resultado['numero'], resultado['premio']))
+                    elif resultado['premio'] < 0:
+                        print(LITERAL_ERROR_API_MENSAJE.format(numero))
+                    else:
+                        print(LITERAL_NO_TOCA.format(resultado['numero'], resultado['premio']))
 
-            resultados.clear()
-            print("Vuelvo a mirar en 1 minuto")
+                resultados.clear()
+                print("Vuelvo a mirar en 1 minuto")
 
-        # A esperar otra ronda.
-        print("Esperando a que empiece.")
-        time.sleep(ESPERA_COMPROBACION)
+            # A esperar otra ronda.
+            print("Esperando a que empiece.")
+            time.sleep(ESPERA_COMPROBACION)
 
 
 if __name__ == "__main__":
