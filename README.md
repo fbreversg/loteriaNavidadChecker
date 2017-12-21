@@ -4,7 +4,7 @@ Script sencillo y rápido para verificar la lotería de navidad.
 
 Python 3.x
 
-* pip install requirements.txt
+* pip install slackclient==1.1.0
 * Editar config.py con los números e importe que se juegan y opcionalmente un token de prueba de slack y tu usuario.
 * python navidad.py
 
