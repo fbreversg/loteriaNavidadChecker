@@ -52,10 +52,42 @@ def handle_message(message, user, channel):
             post_message(
                 message='No me consta que hayas añadido nada =/', channel=channel)
     elif "Borrar" in message:
-        post_message(message='Borrar command: Estamos en ello.', channel=channel)
-        fukuControl.delete_number()
+        post_message(message='WARNING: En desarrollo.', channel=channel)
+        if fukuControl.delete_number(user, message):
+            post_message(
+                message='Numero borrado.', channel=channel)
+        else:
+            post_message(
+                message='Oops, la cosa es que no lo encuentro. ¿Estas seguro que lo estabas jugando?', channel=channel)
+            numbers = fukuControl.list_numbers(user)
+            if len(numbers) > 0:
+                post_message(
+                    message='Estos son los numeros añadidos y cantidad jugada:', channel=channel)
+                for number in numbers:
+                    post_message(
+                        message='Numero %s: %s euros' % number, channel=channel)
+            else:
+                post_message(
+                    message='No me consta que hayas añadido nada =/', channel=channel)
     elif "Modificar" in message:
-        post_message(message='Modificar command: Estamos en ello.', channel=channel)
+        post_message(message='WARNING: En desarrollo.', channel=channel)
+        if fukuControl.update_amount(user, message):
+            post_message(
+                message='Cantidad jugada modificada.', channel=channel)
+        else:
+            post_message(
+                message='Oops, la cosa es que no lo encuentro. ¿Estas seguro que lo estabas jugando?', channel=channel)
+            numbers = fukuControl.list_numbers(user)
+            if len(numbers) > 0:
+                post_message(
+                    message='Estos son los numeros añadidos y cantidad jugada:', channel=channel)
+                for number in numbers:
+                    post_message(
+                        message='Numero %s: %s euros' % number, channel=channel)
+            else:
+                post_message(
+                    message='No me consta que hayas añadido nada =/', channel=channel)
+
     elif "Comprobar" in message:
         post_message(message='Comprobar command: Estamos en ello.', channel=channel)
     else:

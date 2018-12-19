@@ -87,30 +87,27 @@ def delete_number(conn, slack_id, lucky_number):
     """ Borrado de numero """
     try:
         cur = conn.cursor()
-        logger.debug('DELETE - "%s" / "%s"', slack_id, lucky_number)
+        print (lucky_number)
+        logger.debug('DELETE - %s / %s', slack_id, lucky_number)
         cur.execute(DELETE_NUMBER_QUERY, (slack_id, lucky_number))
-
+        cur.close()
+        return True
     except Error as e:
         logger.error(e)
-
-    finally:
-        if cur:
-            cur.close()
+        return False
 
 
 def update_amount(conn, slack_id, lucky_number, amount):
     """ Modificacion de dinero jugado a un numero """
     try:
         cur = conn.cursor()
-        logger.debug('UPDATE - "%s" / "%s" / "%s"', slack_id, lucky_number, amount)
-        cur.execute(UPDATE_AMOUNT_QUERY, slack_id, lucky_number, amount)
-
+        logger.debug('UPDATE - %s / %s / %s', slack_id, lucky_number, amount)
+        cur.execute(UPDATE_AMOUNT_QUERY, (amount, slack_id, lucky_number))
+        cur.close()
+        return True
     except Error as e:
         logger.error(e)
-
-    finally:
-        if cur:
-            cur.close()
+        return False
 
 
 def main():
