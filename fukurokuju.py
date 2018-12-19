@@ -32,14 +32,14 @@ def is_for_me(event):
 
 def handle_message(message, user, channel):
     """ Dispatcher de comandos. """
-    if "Añadir" in message:
+    if "añadir" in message:
         post_message(message='WARNING: En desarrollo.', channel=channel)
         if fukuControl.add_number(user, message):
             post_message(message='Numero añadido. Recuerda que puedes listar los que juegas en cualquier momento con "Listar"', channel=channel)
         else:
             post_message(
                 message='Alguna se ha liado porque esto acaba de petar. ¿Seguro que no estas metiendo otra vez el mismo y sigues la sintaxis?"', channel=channel)
-    elif "Listar" in message:
+    elif "listar" in message:
         post_message(message='WARNING: En desarrollo.', channel=channel)
         numbers = fukuControl.list_numbers(user)
         if len(numbers) > 0:
@@ -51,7 +51,7 @@ def handle_message(message, user, channel):
         else:
             post_message(
                 message='No me consta que hayas añadido nada =/', channel=channel)
-    elif "Borrar" in message:
+    elif "borrar" in message:
         post_message(message='WARNING: En desarrollo.', channel=channel)
         if fukuControl.delete_number(user, message):
             post_message(
@@ -69,7 +69,7 @@ def handle_message(message, user, channel):
             else:
                 post_message(
                     message='No me consta que hayas añadido nada =/', channel=channel)
-    elif "Modificar" in message:
+    elif "modificar" in message:
         post_message(message='WARNING: En desarrollo.', channel=channel)
         if fukuControl.update_amount(user, message):
             post_message(
@@ -88,7 +88,7 @@ def handle_message(message, user, channel):
                 post_message(
                     message='No me consta que hayas añadido nada =/', channel=channel)
 
-    elif "Comprobar" in message:
+    elif "comprobar" in message:
         post_message(message='WARNING: En desarrollo.', channel=channel)
         prizes = fukuControl.check_prizes(user)
         if len(prizes) > 0:

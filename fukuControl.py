@@ -1,15 +1,18 @@
 """ Logica del bot."""
 import fukuPersitence
 import logging
+import os
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# DB sqlite
-DB = "fukurokuju.db"
-# Conexion a BD.
-db_conn = fukuPersitence.create_connection(DB)
+FUKU_MYSQL_USER = os.environ.get('FUKU_MYSQL_USER')
+FUKU_MYSQL_PASS = os.environ.get('FUKU_MYSQL_PASS')
+FUKU_MYSQL_HOST = os.environ.get('FUKU_MYSQL_HOST')
+FUKU_MYSQL_DB = os.environ.get('FUKU_MYSQL_DB')
+
+db_conn = fukuPersitence.create_connection(FUKU_MYSQL_USER, FUKU_MYSQL_PASS, FUKU_MYSQL_HOST, FUKU_MYSQL_DB)
 
 
 def add_number(user, message):
