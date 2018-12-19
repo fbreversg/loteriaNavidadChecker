@@ -24,6 +24,8 @@ DELETE_NUMBER_QUERY = """DELETE FROM FUKU_TABLE WHERE slack_id=? AND lucky_numbe
 
 UPDATE_AMOUNT_QUERY = """UPDATE FUKU_TABLE SET amount=? WHERE slack_id=? AND lucky_number=?"""
 
+CHECK_PRIZES_QUERY = """SELECT lucky_number, amount, prize FROM FUKU_TABLE WHERE slack_id=? AND prize<>0"""
+
 
 def create_connection(db_file):
     """ Conexion a BD. Si no existe la crea. """
@@ -40,11 +42,9 @@ def create_table(conn):
     try:
         cur = conn.cursor()
         cur.execute(CREATE_TABLE_QUERY)
+        cur.close()
     except Error as e:
         logger.error(e)
-    finally:
-        if cur:
-            cur.close()
 
 
 def insert_number(conn, number):
@@ -53,16 +53,12 @@ def insert_number(conn, number):
         cur = conn.cursor()
         logger.debug('INSERT - "%s"', number)
         cur.execute(INSERT_NUMBER_QUERY, number)
-
+        cur.close()
+        return True
     except Error as e:
         logger.error(e)
         logger.error('INSERT - "%s"', number)
-
-    finally:
-        if cur:
-            cur.close()
-
-    return cur.lastrowid
+        return False
 
 
 def select_numbers(conn, slack_id):
@@ -72,22 +68,18 @@ def select_numbers(conn, slack_id):
         logger.debug('SELECT - "%s"', slack_id)
         cur.execute(SELECT_NUMBER_QUERY, (slack_id,))
         rows = cur.fetchall()
+        cur.close()
+        return rows
 
     except Error as e:
         logger.error(e)
-
-    finally:
-        if cur:
-            cur.close()
-
-    return rows
+        return ()
 
 
 def delete_number(conn, slack_id, lucky_number):
     """ Borrado de numero """
     try:
         cur = conn.cursor()
-        print (lucky_number)
         logger.debug('DELETE - %s / %s', slack_id, lucky_number)
         cur.execute(DELETE_NUMBER_QUERY, (slack_id, lucky_number))
         cur.close()
@@ -110,24 +102,36 @@ def update_amount(conn, slack_id, lucky_number, amount):
         return False
 
 
+def check_prizes(conn, slack_id):
+    """ Comprobacion de numeros premiados """
+    try:
+        cur = conn.cursor()
+        logger.debug("CHECK - %s", slack_id)
+        cur.execute(CHECK_PRIZES_QUERY, (slack_id,))
+        rows = cur.fetchall()
+        cur.close()
+        return rows
+    except Error as e:
+        logger.error(e)
+        return 0
+
+
 def main():
 
     db_conn = create_connection("fukurokuju.db")
     with db_conn:
         create_table(db_conn)
-        numero1 = ("AAAAAAA", 12345, 20, 0)
+        numero1 = ("AAAAAAA", 12345, 20, 20)
         numero2 = ("AAAAAAA", 54321, 20, 0)
         insert_number(db_conn, numero1)
-        insert_number(db_conn, numero2)
         insert_number(db_conn, numero2)
         numbers = select_numbers(db_conn, "AAAAAAA")
         for number in numbers:
             print ("PRIMERA" + str(number))
-        delete_number(db_conn, "AAAAAAA", 12345)
-        delete_number(db_conn, "AAAAAAA", 54321)
-        numbers = select_numbers(db_conn, "AAAAAAA")
-        for number in numbers:
-            print("SEGUNDA " + str(number))
+        #delete_number(db_conn, "AAAAAAA", 12345)
+        #delete_number(db_conn, "AAAAAAA", 54321)
+        numbers = check_prizes(db_conn, "AAAAAAA")
+        print(numbers)
 
 
 if __name__ == '__main__':

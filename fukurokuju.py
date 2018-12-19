@@ -89,10 +89,24 @@ def handle_message(message, user, channel):
                     message='No me consta que hayas añadido nada =/', channel=channel)
 
     elif "Comprobar" in message:
-        post_message(message='Comprobar command: Estamos en ello.', channel=channel)
+        post_message(message='WARNING: En desarrollo.', channel=channel)
+        prizes = fukuControl.check_prizes(user)
+        if len(prizes) > 0:
+            post_message(message='CONGRATS! Estos son tus numeros premiados:', channel=channel)
+            for prize in prizes:
+                post_message(message='Numero %s: / Jugado: %s euros / PREMIO: %s euros' % prize, channel=channel)
+        else:
+            post_message(message='De momento nada =/', channel=channel)
+            post_message(message=':troll:', channel=channel)
+
     else:
-        post_message(message='Dejame ayudarte, estos son los comandos que entiendo: "Añadir [numero] [cantidad]", "Listar", "Modificar [numero] [cantidad]", "Borrar [numero]" y "Comprobar"',
-                     channel=channel)
+        post_message(message='Dejame ayudarte, estos son los comandos que entiendo: ', channel=channel)
+        post_message(message='añadir [numero] [cantidad] - Ej: añadir 12345 20', channel=channel)
+        post_message(message='listar', channel=channel)
+        post_message(message='modificar [numero] [cantidad] - Ej: modificar 12345 40', channel=channel)
+        post_message(message='borrar [numero] - Ej: borrar 12345', channel=channel)
+        post_message(message='comprobar', channel=channel)
+        post_message(message='En el caso de que salga un numero premiado se supone que deberia avisarte, eso espero ;)', channel=channel)
 
 
 def post_message(message, channel):
