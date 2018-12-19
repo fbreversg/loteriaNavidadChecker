@@ -46,6 +46,18 @@ def update_amount(user, message):
         return False
 
 
+def check_prizes(user):
+    logger.debug("CHECK %s", user)
+    numbers = fukuPersitence.check_prizes(db_conn, user)
+    if len(numbers) > 0:
+        prizes = []
+        for number in numbers:
+            prizes.append((number[0], number[1], number[1]*number[2]))
+        return prizes
+    else:
+        return ()
+
+
 def __parse_add_update__(message):
     params = message.split()
     if len(params) == 3:
