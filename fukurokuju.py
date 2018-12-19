@@ -91,7 +91,7 @@ def handle_message(message, user, channel):
     elif "Comprobar" in message:
         post_message(message='Comprobar command: Estamos en ello.', channel=channel)
     else:
-        post_message(message='Dejame ayudarte, estos son los comandos que entiendo: Añadir, Listar, Borrar',
+        post_message(message='Dejame ayudarte, estos son los comandos que entiendo: "Añadir [numero] [cantidad]", "Listar", "Modificar [numero] [cantidad]", "Borrar [numero]" y "Comprobar"',
                      channel=channel)
 
 
