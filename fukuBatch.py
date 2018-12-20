@@ -40,9 +40,6 @@ LITERAL_ERROR_API_RETRY = 'ERROR: Se ha reintentado pero el API me sigue odiando
 
 def comprobar_estado_sorteo():
 
-    #TODO: Eliminar
-    return True
-
     # Comprobacion de estado del sorteo. No tiene sentido empezar a lanzar peticiones antes de tiempo.
     response = urllib.request.urlopen(ENDPOINT+str(MAGIC_NUMBER))
     estado = json.loads(response.read().decode('utf8').replace('busqueda=', ''))
@@ -59,19 +56,8 @@ def comprobar_estado_sorteo():
         return status in (1, 2, 3, 4)
 
 
-def calcula_premio (jugado, ganado_decimo):
-    """ Funcion auxiliar para calcular el premio real en funcion de lo jugado """
-    return ganado_decimo * jugado / 20
-
-
 def verifica_numero(numero, retry=True):
     """Verifica si el numero ha sido premiado. retry permite una segunda consulta en caso de fallo."""
-
-    #TODO: Eliminar
-    if numero == 20000:
-        return 30
-    else:
-        return 20
 
     # Cortesia para no reventarles el API
     time.sleep(ESPERA_API)
@@ -111,17 +97,17 @@ def run_batch():
                 logger.info("%s premiado", number)
                 fukuControl.add_update_prize(number, prize)
 
-            # Recuperacion de premiados para comunicar
-            prized = fukuControl.list_prized()
-            print(prized)
-            logger.info("Lista premiados recuperada. Empieza el envio")
+                # Recuperacion de premiados para comunicar
+                prized = fukuControl.list_prized()
+                logger.info("Lista premiados recuperada. Empieza el envio")
+                logger.info(prized)
 
-            for premiado in prized:
-                fuku_slack_client.api_call('chat.postMessage', channel=premiado[0], text="Te toco", as_user=True)
+                for premiado in prized:
+                    fuku_slack_client.api_call('chat.postMessage', channel=premiado[0], text=':tada: Numero: %s / Jugado: %s euros / PREMIO: %s euros' % (premiado[1], premiado[2], premiado[3]), as_user=True)
 
-            # Actualizacion de importes premiados
-            fukuControl.update_prizes(number, prize)
-            logger.info("Actualizados premios de %s con %s", number, prize)
+                # Actualizacion de importes premiados
+                fukuControl.update_prizes(number, prize)
+                logger.info("Actualizados premios de %s con %s", number, prize)
 
 
 if __name__ == '__main__':
