@@ -74,7 +74,7 @@ def check_prizes(user):
     if len(numbers) > 0:
         prizes = []
         for number in numbers:
-            prizes.append((number[0], number[1], number[1]*number[2]))
+            prizes.append((number[0], number[1], number[1]*number[2]/20))
         return prizes
     else:
         return ()
