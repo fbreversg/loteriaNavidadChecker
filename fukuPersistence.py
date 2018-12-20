@@ -15,18 +15,19 @@ CREATE_TABLE_FUKU_QUERY = """CREATE TABLE IF NOT EXISTS FUKU_TABLE (
                             ); """
 
 CREATE_TABLE_FUKU_PRIZES_QUERY = """CREATE TABLE IF NOT EXISTS FUKU_PRIZES_TABLE (
-                                lucky_number integer NOT NULL,
-                                prize integer NOT NULL,
-                                PRIMARY KEY(lucky_number, prize)
+                                lucky_number integer NOT NULL PRIMARY KEY,
+                                prize integer NOT NULL
                                 );"""
 
 INSERT_NUMBER_QUERY = """INSERT INTO FUKU_TABLE(slack_id, lucky_number, amount, prize) 
                         VALUES (%s,%s,%s,%s)"""
 
 INSERT_PRIZE_QUERY = """INSERT INTO FUKU_PRIZES_TABLE(lucky_number, prize) 
-                        VALUES (%s,%s)"""
+                        VALUES (%s,%s) ON DUPLICATE KEY UPDATE prize=%s"""
 
-UPDATE_PRIZE_QUERY = """UPDATE FUKU_PRIZES_TABLE SET prize=%s WHERE lucky_number=%s"""
+UPDATE_PRIZE_QUERY = """UPDATE FUKU_TABLE SET prize=(FUKU_TABLE.amount * %s /20) WHERE lucky_number=%s"""
+
+UPDATE_PRIZE_PRIZES_QUERY = """UPDATE FUKU_PRIZES_TABLE SET prize=%s WHERE lucky_number=%s"""
 
 UPDATE_AMOUNT_QUERY = """UPDATE FUKU_TABLE SET amount=%s WHERE slack_id=%s AND lucky_number=%s"""
 
@@ -34,10 +35,10 @@ SELECT_NUMBER_QUERY = """SELECT lucky_number, amount FROM FUKU_TABLE WHERE slack
 
 SELECT_ALL_NUMBERS_QUERY ="""SELECT DISTINCT FUKU_TABLE.lucky_number FROM FUKU_TABLE"""
 
-SELECT_PRIZES_QUERY = """SELECT FUKU_TABLE.slack_id, FUKU_TABLE.lucky_number, FUKU_TABLE.amount, FUKU_PRIZES_TABLE.prize, 
+SELECT_PRIZES_QUERY = """SELECT FUKU_TABLE.slack_id, FUKU_TABLE.lucky_number, FUKU_TABLE.amount, FUKU_PRIZES_TABLE.prize
                         FROM FUKU_TABLE INNER JOIN FUKU_PRIZES_TABLE 
                         ON FUKU_TABLE.lucky_number=FUKU_PRIZES_TABLE.lucky_number 
-                        AND FUKU_TABLE.amount <> (FUKU_TABLE.amount * FUKU_PRIZES_TABLE.prize / 20)"""
+                        AND FUKU_TABLE.prize <> (FUKU_TABLE.amount * FUKU_PRIZES_TABLE.prize / 20)"""
 
 DELETE_NUMBER_QUERY = """DELETE FROM FUKU_TABLE WHERE slack_id=%s AND lucky_number=%s"""
 
@@ -94,7 +95,7 @@ def insert_prize(conn, number, prize):
     try:
         cur = conn.cursor()
         logger.debug('INSERT PRIZE - "%s" / "%s"', number, prize)
-        cur.execute(INSERT_PRIZE_QUERY, (number, prize))
+        cur.execute(INSERT_PRIZE_QUERY, (number, prize, prize))
         conn.commit()
         cur.close()
         return True
@@ -105,11 +106,11 @@ def insert_prize(conn, number, prize):
         return False
 
 
-def update_prize(conn, number, prize):
-    """ Update de premio """
+def update_prizes(conn, number, prize):
+    """ Update de premios de FUKU"""
     try:
         cur = conn.cursor()
-        logger.debug('UPDATE PRIZE - %s / %s', number, prize)
+        logger.debug('UPDATE PRIZES - %s / %s', number, prize)
         cur.execute(UPDATE_PRIZE_QUERY, (prize, number))
         conn.commit()
         cur.close()
@@ -117,7 +118,7 @@ def update_prize(conn, number, prize):
 
     except mysql.connector.Error as e:
         logger.error(e)
-        logger.error('UPDATE PRIZE - "%s" / "%s"', number, prize)
+        logger.error('UPDATE PRIZEs - "%s" / "%s"', number, prize)
         return False
 
 
@@ -211,13 +212,15 @@ def check_prizes(conn, slack_id):
 
 if __name__ == "__main__":
     db_conn = create_connection("root", "root", "127.0.0.1", "fukurokuju")
+    create_fuku_prizes_table(db_conn)
+    #create_fuku_table(db_conn)
     """
     create_fuku_prizes_table(db_conn)
     select_prizes(db_conn)
     insert_prize(db_conn, 12345, 20)
     select_prizes(db_conn)
     insert_prize(db_conn, 12345, 20)
-    """
     update_prize(db_conn, 12345, 40)
     select_prizes(db_conn)
+    """
     db_conn.close()

@@ -25,10 +25,14 @@ def add_number(user, message):
 
 
 def add_update_prize(number, prize):
-    logger.debug("Add / update prizes: %s / %s", number, prize)
+    logger.debug("Add / update prize: %s / %s", number, prize)
     # Para detectar "repremios" se intenta el insert y si no se hace update.
-    if not fukuPersistence.insert_prize(db_conn, number, prize):
-        fukuPersistence.update_prize(db_conn, number, prize)
+    fukuPersistence.insert_prize(db_conn, number, prize)
+
+
+def update_prizes(number, prize):
+    logger.debug("Update prizes: %s / %s", number, prize)
+    fukuPersistence.update_prizes(db_conn, number, prize)
 
 
 def delete_number(user, message):
