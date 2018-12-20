@@ -92,7 +92,7 @@ def handle_message(message, user, channel):
         post_message(message='WARNING: En desarrollo.', channel=channel)
         prizes = fukuControl.check_prizes(user)
         if len(prizes) > 0:
-            post_message(message='CONGRATS! Estos son tus numeros premiados:', channel=channel)
+            post_message(message=':tada: CONGRATS! Estos son tus numeros premiados: :tada:', channel=channel)
             for prize in prizes:
                 post_message(message='Numero %s: / Jugado: %s euros / PREMIO: %s euros' % prize, channel=channel)
         else:
