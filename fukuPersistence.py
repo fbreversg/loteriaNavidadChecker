@@ -15,9 +15,9 @@ CREATE_TABLE_FUKU_QUERY = """CREATE TABLE IF NOT EXISTS FUKU_TABLE (
                             ); """
 
 CREATE_TABLE_FUKU_PRIZES_QUERY = """CREATE TABLE IF NOT EXISTS FUKU_PRIZES_TABLE (
-                                lucky_number integer NOT NULL PRIMARY KEY,
-                                prize integer,
-                                reprize boolean NOT NULL default 0
+                                lucky_number integer NOT NULL,
+                                prize integer NOT NULL,
+                                PRIMARY KEY(lucky_number, prize)
                                 );"""
 
 INSERT_NUMBER_QUERY = """INSERT INTO FUKU_TABLE(slack_id, lucky_number, amount, prize) 
@@ -26,19 +26,20 @@ INSERT_NUMBER_QUERY = """INSERT INTO FUKU_TABLE(slack_id, lucky_number, amount, 
 INSERT_PRIZE_QUERY = """INSERT INTO FUKU_PRIZES_TABLE(lucky_number, prize) 
                         VALUES (%s,%s)"""
 
-UPDATE_PRIZE_QUERY = """UPDATE FUKU_PRIZES_TABLE SET prize=%s, reprize=1 WHERE lucky_number=%s"""
+UPDATE_PRIZE_QUERY = """UPDATE FUKU_PRIZES_TABLE SET prize=%s WHERE lucky_number=%s"""
 
-UPDATE_REPRIZES_QUERY = """UPDATE FUKU_PRIZES_TABLE SET reprize=0 WHERE reprize=1"""
+UPDATE_AMOUNT_QUERY = """UPDATE FUKU_TABLE SET amount=%s WHERE slack_id=%s AND lucky_number=%s"""
 
 SELECT_NUMBER_QUERY = """SELECT lucky_number, amount FROM FUKU_TABLE WHERE slack_id=%s"""
 
-SELECT_PRIZES_QUERY = """SELECT lucky_number, prize FROM FUKU_PRIZES_TABLE WHERE reprize <> 1"""
+SELECT_ALL_NUMBERS_QUERY ="""SELECT DISTINCT FUKU_TABLE.lucky_number FROM FUKU_TABLE"""
 
-SELECT_REPRIZES_QUERY = """SELECT lucky_number, prize FROM FUKU_PRIZES_TABLE WHERE reprize <> 0"""
+SELECT_PRIZES_QUERY = """SELECT FUKU_TABLE.slack_id, FUKU_TABLE.lucky_number, FUKU_TABLE.amount, FUKU_PRIZES_TABLE.prize, 
+                        FROM FUKU_TABLE INNER JOIN FUKU_PRIZES_TABLE 
+                        ON FUKU_TABLE.lucky_number=FUKU_PRIZES_TABLE.lucky_number 
+                        AND FUKU_TABLE.amount <> (FUKU_TABLE.amount * FUKU_PRIZES_TABLE.prize / 20)"""
 
 DELETE_NUMBER_QUERY = """DELETE FROM FUKU_TABLE WHERE slack_id=%s AND lucky_number=%s"""
-
-UPDATE_AMOUNT_QUERY = """UPDATE FUKU_TABLE SET amount=%s WHERE slack_id=%s AND lucky_number=%s"""
 
 CHECK_PRIZES_QUERY = """SELECT lucky_number, amount, prize FROM FUKU_TABLE WHERE slack_id=%s AND prize<>0"""
 
@@ -120,22 +121,6 @@ def update_prize(conn, number, prize):
         return False
 
 
-def update_reprizes(conn):
-    """ Update de reprizes """
-    try:
-        cur = conn.cursor()
-        logger.debug('UPDATE REPRIZES')
-        cur.execute(UPDATE_REPRIZES_QUERY)
-        conn.commit()
-        cur.close()
-        return True
-
-    except mysql.connector.Error as e:
-        logger.error(e)
-        logger.error('UPDATE REPRIZES')
-        return False
-
-
 def select_numbers(conn, slack_id):
     """ Listado de numeros asociados a usuario """
     try:
@@ -151,27 +136,30 @@ def select_numbers(conn, slack_id):
         return ()
 
 
-def select_prizes(conn):
+def select_all_numbers(conn):
+    """ Listado de todos los numeros"""
+    try:
+        cur = conn.cursor()
+        logger.debug('SELECT ALL NUMBERS')
+        cur.execute(SELECT_ALL_NUMBERS_QUERY)
+        rows = cur.fetchall()
+        cur.close()
+        rows_list = []
+        for row in rows:
+            rows_list.append(row[0])
+        return rows_list
+
+    except mysql.connector.Error as e:
+        logger.error(e)
+        return []
+
+
+def select_prized(conn):
     """ Listado de numeros premiados"""
     try:
         cur = conn.cursor()
         logger.debug('SELECT PRIZES')
         cur.execute(SELECT_PRIZES_QUERY)
-        rows = cur.fetchall()
-        cur.close()
-        return rows
-
-    except mysql.connector.Error as e:
-        logger.error(e)
-        return ()
-
-
-def select_reprizes(conn):
-    """ Listado de numeros REpremiados"""
-    try:
-        cur = conn.cursor()
-        logger.debug('SELECT REPRIZES')
-        cur.execute(SELECT_REPRIZES_QUERY)
         rows = cur.fetchall()
         cur.close()
         return rows
@@ -232,5 +220,4 @@ if __name__ == "__main__":
     """
     update_prize(db_conn, 12345, 40)
     select_prizes(db_conn)
-    update_reprizes(db_conn)
     db_conn.close()

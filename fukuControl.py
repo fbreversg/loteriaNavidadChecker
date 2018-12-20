@@ -25,8 +25,8 @@ def add_number(user, message):
 
 
 def add_update_prize(number, prize):
-    logger.debug("Add / update prizes: %s / %s", (number, prize))
-    # Para detectar "repremios" se intenta el insert y si no se hace update y activa flag de reprize.
+    logger.debug("Add / update prizes: %s / %s", number, prize)
+    # Para detectar "repremios" se intenta el insert y si no se hace update.
     if not fukuPersistence.insert_prize(db_conn, number, prize):
         fukuPersistence.update_prize(db_conn, number, prize)
 
@@ -42,16 +42,17 @@ def delete_number(user, message):
 
 def list_numbers(user):
     logger.debug("List %s", user)
-    numbers = fukuPersistence.select_numbers(db_conn, user)
-    return numbers
+    return fukuPersistence.select_numbers(db_conn, user)
 
 
-def list_prizes():
-    logger.debug("List prizes")
-    prizes = fukuPersistence.select_prizes(db_conn)
-    reprizes = fukuPersistence.select_reprizes(db_conn)
-    fukuPersistence.update_reprizes()
-    return prizes, reprizes
+def list_all_numbers():
+    logger.debug("List all numbers")
+    return fukuPersistence.select_all_numbers(db_conn)
+
+
+def list_prized():
+    logger.debug("List prized")
+    return fukuPersistence.select_prized(db_conn)
 
 
 def update_amount(user, message):
@@ -88,7 +89,6 @@ def __parse_delete__(message):
     params = message.split()
     if len(params) == 2:
         if params[1].isnumeric():
-            print ("PARSE", params[1])
             return params[1],
 
     return None
