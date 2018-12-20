@@ -16,7 +16,8 @@ CREATE_TABLE_FUKU_QUERY = """CREATE TABLE IF NOT EXISTS FUKU_TABLE (
 
 CREATE_TABLE_FUKU_PRIZES_QUERY = """CREATE TABLE IF NOT EXISTS FUKU_PRIZES_TABLE (
                                 lucky_number integer NOT NULL PRIMARY KEY,
-                                prize integer
+                                prize integer,
+                                reprize boolean NOT NULL default 0
                                 );"""
 
 INSERT_NUMBER_QUERY = """INSERT INTO FUKU_TABLE(slack_id, lucky_number, amount, prize) 
@@ -25,11 +26,15 @@ INSERT_NUMBER_QUERY = """INSERT INTO FUKU_TABLE(slack_id, lucky_number, amount, 
 INSERT_PRIZE_QUERY = """INSERT INTO FUKU_PRIZES_TABLE(lucky_number, prize) 
                         VALUES (%s,%s)"""
 
-UPDATE_PRIZE_QUERY = """UPDATE FUKU_PRIZES_TABLE SET prize=%s WHERE lucky_number=%s"""
+UPDATE_PRIZE_QUERY = """UPDATE FUKU_PRIZES_TABLE SET prize=%s, reprize=1 WHERE lucky_number=%s"""
+
+UPDATE_REPRIZES_QUERY = """UPDATE FUKU_PRIZES_TABLE SET reprize=0 WHERE reprize=1"""
 
 SELECT_NUMBER_QUERY = """SELECT lucky_number, amount FROM FUKU_TABLE WHERE slack_id=%s"""
 
-SELECT_PRIZES_QUERY = """SELECT lucky_number, prize FROM FUKU_PRIZES_TABLE"""
+SELECT_PRIZES_QUERY = """SELECT lucky_number, prize FROM FUKU_PRIZES_TABLE WHERE reprize <> 1"""
+
+SELECT_REPRIZES_QUERY = """SELECT lucky_number, prize FROM FUKU_PRIZES_TABLE WHERE reprize <> 0"""
 
 DELETE_NUMBER_QUERY = """DELETE FROM FUKU_TABLE WHERE slack_id=%s AND lucky_number=%s"""
 
@@ -103,8 +108,8 @@ def update_prize(conn, number, prize):
     """ Update de premio """
     try:
         cur = conn.cursor()
-        logger.debug('UPDATE PRIZE - "%s" / "%s"', number, prize)
-        cur.execute(UPDATE_PRIZE_QUERY, (number, prize))
+        logger.debug('UPDATE PRIZE - %s / %s', number, prize)
+        cur.execute(UPDATE_PRIZE_QUERY, (prize, number))
         conn.commit()
         cur.close()
         return True
@@ -112,6 +117,22 @@ def update_prize(conn, number, prize):
     except mysql.connector.Error as e:
         logger.error(e)
         logger.error('UPDATE PRIZE - "%s" / "%s"', number, prize)
+        return False
+
+
+def update_reprizes(conn):
+    """ Update de reprizes """
+    try:
+        cur = conn.cursor()
+        logger.debug('UPDATE REPRIZES')
+        cur.execute(UPDATE_REPRIZES_QUERY)
+        conn.commit()
+        cur.close()
+        return True
+
+    except mysql.connector.Error as e:
+        logger.error(e)
+        logger.error('UPDATE REPRIZES')
         return False
 
 
@@ -136,6 +157,21 @@ def select_prizes(conn):
         cur = conn.cursor()
         logger.debug('SELECT PRIZES')
         cur.execute(SELECT_PRIZES_QUERY)
+        rows = cur.fetchall()
+        cur.close()
+        return rows
+
+    except mysql.connector.Error as e:
+        logger.error(e)
+        return ()
+
+
+def select_reprizes(conn):
+    """ Listado de numeros REpremiados"""
+    try:
+        cur = conn.cursor()
+        logger.debug('SELECT REPRIZES')
+        cur.execute(SELECT_REPRIZES_QUERY)
         rows = cur.fetchall()
         cur.close()
         return rows
@@ -187,10 +223,14 @@ def check_prizes(conn, slack_id):
 
 if __name__ == "__main__":
     db_conn = create_connection("root", "root", "127.0.0.1", "fukurokuju")
+    """
     create_fuku_prizes_table(db_conn)
     select_prizes(db_conn)
     insert_prize(db_conn, 12345, 20)
     select_prizes(db_conn)
     insert_prize(db_conn, 12345, 20)
+    """
     update_prize(db_conn, 12345, 40)
     select_prizes(db_conn)
+    update_reprizes(db_conn)
+    db_conn.close()
