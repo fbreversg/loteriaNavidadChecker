@@ -3,6 +3,8 @@
 import fukuControl
 import json
 import logging
+import os
+import slackclient
 import time
 import urllib.request
 
@@ -10,6 +12,13 @@ import urllib.request
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+FUKU_SLACK_TOKEN = os.environ.get('FUKU_SLACK_TOKEN')
+FUKU_SLACK_NAME = os.environ.get('FUKU_SLACK_NAME')
+FUKU_SLACK_ID = os.environ.get('FUKU_SLACK_ID')
+
+# Enable slack client
+fuku_slack_client = slackclient.SlackClient(FUKU_SLACK_TOKEN)
 
 # Endpoint cortesia de El Pais
 ENDPOINT = 'http://api.elpais.com/ws/LoteriaNavidadPremiados?n='
@@ -94,17 +103,25 @@ def run_batch():
     logger.info("Arranque del batch.")
     if comprobar_estado_sorteo():
         numbers = fukuControl.list_all_numbers()
+        logger.info("Recuperados numeros")
         for number in numbers:
+            logger.info("Verificando %s", number)
             prize = verifica_numero(number)
             if prize > 0:
+                logger.info("%s premiado", number)
                 fukuControl.add_update_prize(number, prize)
 
             # Recuperacion de premiados para comunicar
             prized = fukuControl.list_prized()
             print(prized)
+            logger.info("Lista premiados recuperada. Empieza el envio")
+
+            for premiado in prized:
+                fuku_slack_client.api_call('chat.postMessage', channel=premiado[0], text="Te toco", as_user=True)
 
             # Actualizacion de importes premiados
             fukuControl.update_prizes(number, prize)
+            logger.info("Actualizados premios de %s con %s", number, prize)
 
 
 if __name__ == '__main__':
