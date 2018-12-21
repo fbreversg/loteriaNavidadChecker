@@ -33,14 +33,12 @@ def is_for_me(event):
 def handle_message(message, user, channel):
     """ Dispatcher de comandos. """
     if "añadir" in message:
-        post_message(message='WARNING: En desarrollo.', channel=channel)
         if fukuControl.add_number(user, message):
             post_message(message='Numero añadido. Recuerda que puedes listar los que juegas en cualquier momento con "Listar"', channel=channel)
         else:
             post_message(
                 message='Alguna se ha liado porque esto acaba de petar. ¿Seguro que no estas metiendo otra vez el mismo y sigues la sintaxis?"', channel=channel)
     elif "listar" in message:
-        post_message(message='WARNING: En desarrollo.', channel=channel)
         numbers = fukuControl.list_numbers(user)
         if len(numbers) > 0:
             post_message(
@@ -52,7 +50,6 @@ def handle_message(message, user, channel):
             post_message(
                 message='No me consta que hayas añadido nada =/', channel=channel)
     elif "borrar" in message:
-        post_message(message='WARNING: En desarrollo.', channel=channel)
         if fukuControl.delete_number(user, message):
             post_message(
                 message='Numero borrado.', channel=channel)
@@ -70,7 +67,6 @@ def handle_message(message, user, channel):
                 post_message(
                     message='No me consta que hayas añadido nada =/', channel=channel)
     elif "modificar" in message:
-        post_message(message='WARNING: En desarrollo.', channel=channel)
         if fukuControl.update_amount(user, message):
             post_message(
                 message='Cantidad jugada modificada.', channel=channel)
@@ -89,7 +85,6 @@ def handle_message(message, user, channel):
                     message='No me consta que hayas añadido nada =/', channel=channel)
 
     elif "comprobar" in message:
-        post_message(message='WARNING: En desarrollo.', channel=channel)
         prizes = fukuControl.check_prizes(user)
         if len(prizes) > 0:
             post_message(message=':tada: CONGRATS! Estos son tus numeros premiados: :tada:', channel=channel)
