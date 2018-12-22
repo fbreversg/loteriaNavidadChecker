@@ -111,5 +111,8 @@ def run_batch():
 
 
 if __name__ == '__main__':
-    run_batch()
+    while True:
+        run_batch()
+        time.sleep(ESPERA_COMPROBACION)
+
 
